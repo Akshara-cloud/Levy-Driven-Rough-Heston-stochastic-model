@@ -1,0 +1,12 @@
+June 19
+
+Implemented NIG Lévy process simulator using scipy.stats.norminvgauss.
+
+Generated 5 sample paths.
+
+Empirical mean check over 1000 paths:
+
+Mean = -0.003898
+
+Conclusion:
+Process is approximately mean-zero after centering.
