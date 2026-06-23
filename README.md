@@ -54,8 +54,18 @@ PYTHONPATH=. python3 src/stochastic/vary_parameters.py
 ```
 Output: `plots/vary_H.png`, `plots/vary_lambda.png`
 
-### Option Pricing & Implied Volatility Smile
-Prices call options via Monte Carlo for Classical Heston, Rough Heston, and Our Model, and plots the implied volatility smile at $T=0.25$.
+### Option Pricing
+Prices call options via Monte Carlo for Classical Heston, Rough Heston, and Our Model, saving results to CSV.
 ```bash
 PYTHONPATH=. python3 src/stochastic/option_pricing.py
 ```
+Output: `data/csv/option_prices.csv`
+
+### Implied Volatility Smile
+Inverts option prices to Black-Scholes implied volatilities and plots the comparison smile at $T=0.25$ in-memory.
+```bash
+PYTHONPATH=. python3 src/stochastic/implied_vol_smile.py
+```
+Output: `plots/implied_vol_smile.png`
+
+
