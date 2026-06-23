@@ -1,6 +1,6 @@
 # Run Commands
 
-All files should be run from the root directory of the project using `PYTHONPATH=.`.
+> **Important:** All files must be run from the **root directory** of the project with `PYTHONPATH=.` prefix — otherwise Python cannot resolve the `src` package imports.
 
 ---
 
@@ -45,12 +45,14 @@ Plots sample paths of the full Lévy-driven Rough Heston variance process $v_t$ 
 ```bash
 PYTHONPATH=. python3 src/stochastic/stochastic_volterra.py
 ```
+Output: `plots/variance_plots.png`
 
 ### Parameter Isolation Study (H and Lambda)
-Generates the $2 \times 2$ grid plot for varying $H$ and the comparative plot for varying jump intensity $\lambda$.
+Generates the 2x2 grid plot for varying H and the comparative plot for varying jump intensity lambda.
 ```bash
 PYTHONPATH=. python3 src/stochastic/vary_parameters.py
 ```
+Output: `plots/vary_H.png`, `plots/vary_lambda.png`
 
 ### Option Pricing & Implied Volatility Smile
 Prices call options via Monte Carlo for Classical Heston, Rough Heston, and Our Model, and plots the implied volatility smile at $T=0.25$.
