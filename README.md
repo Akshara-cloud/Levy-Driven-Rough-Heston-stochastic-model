@@ -1,0 +1,59 @@
+# Run Commands
+
+All files should be run from the root directory of the project using `PYTHONPATH=.`.
+
+---
+
+## 📈 1. Deterministic Volterra Solver (Week 1)
+
+### Uniform Mesh Solver
+Plots the deterministic volatility solution on a uniform mesh.
+```bash
+PYTHONPATH=. python3 src/volterra/uniform_mesh.py
+```
+
+### Graded Mesh Comparison
+Compares Uniform and Graded meshes, and plots the deterministic solutions for Classical Heston ($\omega=1.0$), Rough Heston ($\omega=0.6$), and the deterministic limit of Our Model ($\omega=0.7$).
+```bash
+PYTHONPATH=. python3 src/volterra/graded_mesh.py
+```
+
+### Convergence Analysis
+Plots log(error) vs log(N) to demonstrate the convergence rates of both meshes.
+```bash
+PYTHONPATH=. python3 src/volterra/convergence.py
+```
+
+---
+
+## 🎲 2. Stochastic Simulation (Week 2 & 3)
+
+### NIG Lévy Process Paths
+Plots sample paths of the NIG Lévy noise process to verify mean-centering.
+```bash
+PYTHONPATH=. python3 src/stochastic/levy_paths_sim.py
+```
+
+### Fractional Kernel Stochastic Integral
+Plots simulated paths of the fractional Brownian stochastic integral.
+```bash
+PYTHONPATH=. python3 src/stochastic/hybrid_scheme.py
+```
+
+### Volatility Paths (Full Model)
+Plots sample paths of the full Lévy-driven Rough Heston variance process $v_t$ with positivity clamping.
+```bash
+PYTHONPATH=. python3 src/stochastic/stochastic_volterra.py
+```
+
+### Parameter Isolation Study (H and Lambda)
+Generates the $2 \times 2$ grid plot for varying $H$ and the comparative plot for varying jump intensity $\lambda$.
+```bash
+PYTHONPATH=. python3 src/stochastic/vary_parameters.py
+```
+
+### Option Pricing & Implied Volatility Smile
+Prices call options via Monte Carlo for Classical Heston, Rough Heston, and Our Model, and plots the implied volatility smile at $T=0.25$.
+```bash
+PYTHONPATH=. python3 src/stochastic/option_pricing.py
+```
