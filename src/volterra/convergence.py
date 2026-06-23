@@ -2,29 +2,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 from volterra_solver import solve
+from volterra_solver import t_um
+from volterra_solver import t_gm 
 
 T = 2
-Ref_N = 6400 
+Ref_N = 3200
 v_0 = 0.04
-w = 0.6
+w = 0.6 # w = H + 1/2 , where H is the hurst parameter
 theta = 0.2
-
-def t_um(N):
-   return np.linspace(0, T, N+1)
-
-def t_gm(N): 
-    t_gm = np.zeros(N+1) 
-
-    for i in range(0, N+1):
-        t_gm[i] = ((i/N)**(1 + math.ceil(1/w)))*T
-    return t_gm
 
 v_um = np.zeros(Ref_N+1)
 v_um[0] = v_0
 v_gm = v_um.copy()
 
 v_um = solve(v_um, t_um(Ref_N), w, v_0, theta, Ref_N)
-v_gm = solve(v_gm, t_gm(Ref_N), w, v_0, theta, Ref_N)
+v_gm = solve(v_gm, t_gm(Ref_N, w), w, v_0, theta, Ref_N)
 
 # sample quantities
 ns = [10, 20, 40, 80, 160, 320]
@@ -46,7 +38,7 @@ for i in range(len(ns)):
     errors_um.append(err)
 
     # finding error using interpolation
-    tg = t_gm(N)
+    tg = t_gm(N, w)
     vs2 = solve(vs2, tg, w, v_0, theta, N)
     v_ref_interp = np.interp(tg, t_gm(Ref_N), v_gm)
     err_gm = np.max(np.abs(vs2 - v_ref_interp))
