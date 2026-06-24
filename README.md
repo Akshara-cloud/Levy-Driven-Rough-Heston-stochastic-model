@@ -1,10 +1,6 @@
-# Run Commands
+**Important:** All files must be run from the **root directory** of the project with `PYTHONPATH=.`
 
-> **Important:** All files must be run from the **root directory** of the project with `PYTHONPATH=.` prefix — otherwise Python cannot resolve the `src` package imports.
-
----
-
-## 📈 1. Deterministic Volterra Solver (Week 1)
+## Deterministic Volterra Solver (Week 1)
 
 ### Uniform Mesh Solver
 Plots the deterministic volatility solution on a uniform mesh.
@@ -24,9 +20,7 @@ Plots log(error) vs log(N) to demonstrate the convergence rates of both meshes.
 PYTHONPATH=. python3 src/volterra/convergence.py
 ```
 
----
-
-## 🎲 2. Stochastic Simulation (Week 2 & 3)
+## Stochastic Simulation (Week 2 & 3)
 
 ### NIG Lévy Process Paths
 Plots sample paths of the NIG Lévy noise process to verify mean-centering.

@@ -1,4 +1,3 @@
-import os
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,10 +5,9 @@ from scipy.stats import norm
 from scipy.optimize import brentq
 
 from src.stochastic.stochastic_volterra import stochastic_volterra
+from src.stochastic.validation import stochastic_volterra_vectorized
 from src.stochastic.nig_levy import nig_increments
 
-
-# global configurations matching other files
 S_0 = 100.0
 r = 0.03          # risk-free rate
 mu = r            # drift
@@ -38,32 +36,6 @@ def bs_call(sigma_val, S, K, T, risk_free):
 def t_gm_pricing(N, w_for_grading, T_val):
     r_val = 1 + math.ceil(1 / w_for_grading)
     return ((np.arange(N + 1) / N) ** r_val) * T_val
-
-# Vectorized simulation of stochastic Volterra paths to run fast
-def stochastic_volterra_vectorized(t, w, v0, theta, k, sigma, a, b, lam, num_paths):
-    N = len(t) - 1
-    dt = np.diff(t)
-    
-    v_t = np.zeros((num_paths, N + 1))
-    v_t[:, 0] = v0
-    
-    dL = np.zeros((num_paths, N))
-    for p in range(num_paths):
-        dL[p, :] = nig_increments(N, t, a, b)
-        
-    inv_gamma = 1.0 / math.gamma(w)
-    for i in range(1, N + 1):
-        j_indices = np.arange(i)
-        kernel_weight = ((t[i] - t[j_indices]) ** w - (t[i] - t[j_indices + 1]) ** w) / w
-        
-        v_d = np.sum(kernel_weight * k * (theta - v_t[:, :i]), axis=1)
-        sqrt_v = np.sqrt(np.maximum(v_t[:, :i], 0.0))
-        v_s_terms = sigma * sqrt_v * (lam * dL[:, :i]) * (kernel_weight / dt[:i])
-        v_s = np.sum(v_s_terms, axis=1)
-        
-        v_t[:, i] = np.maximum(v0 + inv_gamma * (v_d + v_s), 0.0)
-        
-    return v_t
 
 # Euler-Maruyama simulator using vectorized variance paths
 def _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed):
@@ -98,15 +70,28 @@ def simulate_rough_heston_paths(T_val, num_paths=n_paths, seed=2):
 def simulate_our_model_paths(T_val, num_paths=n_paths, seed=3):
     n_steps = max(int(n_steps_per_year * T_val), 10)
     t = t_gm_pricing(n_steps, w, T_val)
-    v_path = stochastic_volterra_vectorized(t, w, v_0, theta, k, sigma, a, b, lam=1.0, num_paths=num_paths)
+    v_path = stochastic_volterra_vectorized(t, w, v_0, theta, sigma, a, b, k=k, lam=1.0, num_paths=num_paths)
     return _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed)
 
+# Black-Scholes put price
+def bs_put(sigma_val, S, K, T, risk_free):
+    if sigma_val <= 0 or T <= 0:
+        return max(K * np.exp(-risk_free * T) - S, 0.0)
+    d1 = (np.log(S / K) + (risk_free + 0.5 * sigma_val**2) * T) / (sigma_val * np.sqrt(T))
+    d2 = d1 - sigma_val * np.sqrt(T)
+    return K * np.exp(-risk_free * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+
 # calculate implied volatility using Brent's root-finding method
-def implied_vol(price, S, K, T, risk_free, lo=1e-4, hi=5.0):
-    intrinsic = max(S - K * np.exp(-risk_free * T), 0.0)
+def implied_vol(price, S, K, T, risk_free, is_call=True, lo=1e-4, hi=5.0):
+    if is_call:
+        intrinsic = max(S - K * np.exp(-risk_free * T), 0.0)
+        f = lambda sigma_val: bs_call(sigma_val, S, K, T, risk_free) - price
+    else:
+        intrinsic = max(K * np.exp(-risk_free * T) - S, 0.0)
+        f = lambda sigma_val: bs_put(sigma_val, S, K, T, risk_free) - price
+        
     if price <= intrinsic:
         return np.nan
-    f = lambda sigma_val: bs_call(sigma_val, S, K, T, risk_free) - price
     try:
         return brentq(f, lo, hi)
     except ValueError:
@@ -127,14 +112,17 @@ def run_pricing_and_iv():
             S_T = sim_fn(T_val)
             for m in moneyness_grid:
                 K = m * S_0
-                price = np.exp(-r * T_val) * np.mean(np.maximum(S_T - K, 0.0))
-                iv = implied_vol(price, S_0, K, T_val, r)
+                if m < 1.0:
+                    price = np.exp(-r * T_val) * np.mean(np.maximum(K - S_T, 0.0))
+                    iv = implied_vol(price, S_0, K, T_val, r, is_call=False)
+                else:
+                    price = np.exp(-r * T_val) * np.mean(np.maximum(S_T - K, 0.0))
+                    iv = implied_vol(price, S_0, K, T_val, r, is_call=True)
                 rows.append({"model": model_name, "T": T_val, "K_over_S": m, "K": K, "price": price, "implied_vol": iv})
     return rows
 
 # plot the volatility smile
 def plot_smile(rows, T_target=0.25, out_path="plots/implied_vol_smile.png"):
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     plt.figure(figsize=(8, 6))
     
     sub = [row for row in rows if np.isclose(row["T"], T_target)]
