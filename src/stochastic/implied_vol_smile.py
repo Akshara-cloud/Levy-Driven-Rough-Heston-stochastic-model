@@ -50,20 +50,18 @@ def _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed):
         S = S * np.exp((mu - vn / 2.0) * dt + np.sqrt(vn * dt) * Z)
     return S
 
-# Classical Heston paths (omega = 1, deterministic mean-reverting variance path)
+# Classical Heston paths (w = 1.0, stochastic variance path driven by Brownian motion)
 def simulate_classical_heston_paths(T_val, num_paths=n_paths, seed=1):
     n_steps = max(int(n_steps_per_year * T_val), 10)
-    t = t_gm_pricing(n_steps, w, T_val)
-    v_single = theta + (v_0 - theta) * np.exp(-k * t)
-    v_path = np.tile(v_single, (num_paths, 1))
+    t = t_gm_pricing(n_steps, 1.0, T_val)
+    v_path = stochastic_volterra_vectorized(t, 1.0, v_0, theta, sigma, a, b, k=k, lam=1.0, num_paths=num_paths, noise_type="brownian", seed=seed)
     return _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed)
 
-# Rough Heston paths (omega = 0.7, deterministic Volterra variance path)
+# Rough Heston paths (w = 0.7, stochastic Volterra variance path driven by Brownian motion)
 def simulate_rough_heston_paths(T_val, num_paths=n_paths, seed=2):
     n_steps = max(int(n_steps_per_year * T_val), 10)
     t = t_gm_pricing(n_steps, w, T_val)
-    v_single = stochastic_volterra(t, w, v_0, theta, k, sigma, a, b, lam=0.0)
-    v_path = np.tile(v_single, (num_paths, 1))
+    v_path = stochastic_volterra_vectorized(t, w, v_0, theta, sigma, a, b, k=k, lam=1.0, num_paths=num_paths, noise_type="brownian", seed=seed)
     return _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed)
 
 # Our Model paths (stochastic Volterra variance paths driven by NIG increments)

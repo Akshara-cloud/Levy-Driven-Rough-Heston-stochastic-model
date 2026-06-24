@@ -18,8 +18,7 @@ w = 0.7  # H=0.2
 N_steps = 200
 num_paths = 2000
 
-# consider k=1 and lam(jump intensity) to be 1  
-def stochastic_volterra_vectorized(t, w, v0, theta, sigma, a, b, k=1, lam=1, num_paths=200):
+def stochastic_volterra_vectorized(t, w, v0, theta, sigma, a, b, k=1, lam=1, num_paths=200, noise_type="nig", seed=3):
     N = len(t) - 1
     dt = np.diff(t)
     
@@ -27,8 +26,12 @@ def stochastic_volterra_vectorized(t, w, v0, theta, sigma, a, b, k=1, lam=1, num
     v_t[:, 0] = v0
     
     dL = np.zeros((num_paths, N))
-    for p in range(num_paths):
-        dL[p, :] = nig_increments(N, t, a, b)
+    if noise_type == "brownian":
+        rng = np.random.default_rng(seed)
+        dL = rng.standard_normal((num_paths, N)) * np.sqrt(dt)
+    else:
+        for p in range(num_paths):
+            dL[p, :] = nig_increments(N, t, a, b)
         
     inv_gamma = 1.0 / math.gamma(w)
     for i in range(1, N + 1):
