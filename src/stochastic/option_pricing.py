@@ -18,7 +18,7 @@ sigma = 0.3       # vol-of-vol
 a = 3.0           # NIG parameter a
 b = -1.0          # NIG parameter b
 w = 0.7           # Volterra parameter (w = H + 0.5 for H=0.2)
-n_paths = 1000
+n_paths = 50000
 n_steps_per_year = 252
 
 moneyness_grid = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3]
@@ -50,7 +50,7 @@ def _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed):
         S = S * np.exp((mu - vn / 2.0) * dt + np.sqrt(vn * dt) * Z)
     return S
 
-# Classical Heston paths (omega = 1, deterministic mean-reverting variance path)
+# Classical Heston paths (w = 1, deterministic mean-reverting variance path)
 def simulate_classical_heston_paths(T_val, num_paths=n_paths, seed=1):
     n_steps = max(int(n_steps_per_year * T_val), 10)
     t = t_gm_pricing(n_steps, w, T_val)
@@ -58,7 +58,7 @@ def simulate_classical_heston_paths(T_val, num_paths=n_paths, seed=1):
     v_path = np.tile(v_single, (num_paths, 1))
     return _euler_terminal_prices_vectorized(v_path, T_val, num_paths, seed)
 
-# Rough Heston paths (omega = 0.7, deterministic Volterra variance path)
+# Rough Heston paths (w = 0.7, deterministic Volterra variance path)
 def simulate_rough_heston_paths(T_val, num_paths=n_paths, seed=2):
     n_steps = max(int(n_steps_per_year * T_val), 10)
     t = t_gm_pricing(n_steps, w, T_val)

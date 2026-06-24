@@ -18,7 +18,7 @@ sigma = 0.3       # vol-of-vol
 a = 3.0           # NIG parameter a
 b = -1.0          # NIG parameter b
 w = 0.7           # Volterra parameter (w = H + 0.5 for H=0.2)
-n_paths = 1000
+n_paths = 50000
 n_steps_per_year = 252
 
 moneyness_grid = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3]
